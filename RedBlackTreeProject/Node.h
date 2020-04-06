@@ -6,7 +6,7 @@ class Node
 	bool colorBlack;
 	Node<T>* left;
 	Node<T>* right;
-	Node<T>* parrent;
+	Node<T>* parent;
 public:
 	Node(T value);
 	T getValue()const;
@@ -14,16 +14,16 @@ public:
 	bool isRed()const;
 	Node<T>* getLeft()const;
 	Node<T>* getRight()const;
-	Node<T>* getParrent()const;
+	Node<T>* getParent()const;
 	void setLeft(Node<T>* child);
 	void setRight(Node<T>* child);
-	void setParrent(Node<T>* parrent);
+	void setParent(Node<T>* parrent);
 	void changeColor();
 };
 
 template<typename T>
 inline Node<T>::Node(T value)
-	:value(value),colorBlack(true),left(nullptr),right(nullptr)
+	:value(value),colorBlack(false),left(nullptr),right(nullptr),parrent(nullptr)
 {}
 
 template<typename T>
@@ -48,10 +48,18 @@ template<typename T>
 inline void Node<T>::setRight(Node<T>* child) { right = child; }
 
 template<typename T>
-inline void Node<T>::setParrent(Node<T>* parrent){ this->parrent = parrent; }
+inline void Node<T>::setParent(Node<T>* parent){ this->parent = parent; }
 
 template<typename T>
-inline Node<T>* Node<T>::getParrent() const{ return parrent; }
+inline Node<T>* Node<T>::getParent() const{ return parent; }
 
 template<typename T>
 inline void Node<T>::changeColor() { colorBlack = !colorBlack; }
+
+
+
+
+template<typename T>
+bool operator<(Node<T> a, Node<T> b) {
+	return a.getValue() < b.getValue();
+}

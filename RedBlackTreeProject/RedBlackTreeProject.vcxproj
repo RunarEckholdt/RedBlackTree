@@ -149,6 +149,10 @@
   <ItemGroup>
     <ClCompile Include="RedBlackTreeProject.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Node.h" />
+    <ClInclude Include="RedBlackTree.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
