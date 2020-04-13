@@ -18,6 +18,7 @@ class RedBlackTree
 	Node<T>* findMin(Node<T>* z, Node<T>* v, Node<T>* u)const;
 	Node<T>* findMid(Node<T>* z, Node<T>* v, Node<T>* u)const;
 	Node<T>* findMax(Node<T>* z, Node<T>* v, Node<T>* u)const;
+	void disconnect(Node<T>* node);
 
 public:
 	RedBlackTree();
@@ -37,12 +38,41 @@ inline void RedBlackTree<T>::trinodeRestructuring(Node<T>* z, Node<T>* v, Node<T
 	Node<T>* a = findMin(z, v, u);
 	Node<T>* b = findMid(z, v, u);
 	Node<T>* c = findMax(z, v, u);
-	Node<T> temp = u;
+	Node<T> oldU = *u;
+	Node<T> tempB = *b;
+	vector<Node<T>*> children;
+	if (z->getLeft() != nullptr)children.push_back(z->getLeft());
+	if (z->getRight() != nullptr)children.push_back(z->getRight());
+
+	if (v->getLeft() != nullptr && v->getLeft()==z)children.push_back(z->getLeft());
+	if (v->getRight() != nullptr && v->getRight() == z)children.push_back(z->getRight());
+
+	if (u->getLeft() != nullptr && u->getLeft() == v)children.push_back(z->getLeft());
+	if (u->getRight() != nullptr && u->getRight() == v)children.push_back(z->getRight());
+
+	disconnect(a);
+	disconnect(b);
+	disconnect(c);
+
+
 	u = b;
-	u->setParent(temp->getParent());
+	u->setParent(oldU.getParent());
 	u->setLeft(a);
 	u->setRight(c);
-	
+	a->setParent(b);
+	c->setParent(b);
+	c->setLeft(tempB.getRight());
+
+	for (Node<T>* node : children) {
+		if (*node < *b) {
+			if (*node < *a) a->setLeft(node);
+			else a->setRight(node);
+		}
+		else {
+			if (*node < *c) c->setLeft(node);
+			else c->setRight(node);
+		}
+	}
 	
 	
 
@@ -92,6 +122,13 @@ inline Node<T>* RedBlackTree<T>::findMax(Node<T>* z, Node<T>* v, Node<T>* u) con
 		return v;
 	else
 		return u;
+}
+
+template<typename T>
+inline void RedBlackTree<T>::disconnect(Node<T>* node){
+	node->setLeft(nullptr);
+	node->setRight(nullptr);
+	node->setParent(nullptr);
 }
 
 
