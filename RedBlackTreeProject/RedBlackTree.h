@@ -14,11 +14,18 @@ class RedBlackTree
 	void trinodeRestructuring(Node<T>* z,Node<T>* v,Node<T>* u);
 	void recolorChidren(Node<T>* parrent);
 	void deleteNode(Node<T>* parrent);
-	void fixTree();
+	void fixDoubleRed(Node<T>* grandChild);
+	void fixTree(Node<T>* current);
 	Node<T>* findMin(Node<T>* z, Node<T>* v, Node<T>* u)const;
 	Node<T>* findMid(Node<T>* z, Node<T>* v, Node<T>* u)const;
 	Node<T>* findMax(Node<T>* z, Node<T>* v, Node<T>* u)const;
 	void disconnect(Node<T>* node);
+	int maxBlackDepth()const;
+	int maxBlackDepth(Node<T>* current, int curDepth)const;
+	int getBlackDepth(Node<T>* current, int curDepth)const;
+	bool isBalanced()const;
+	bool isBalanced(Node<T>* current, const int& maxDepth,int curDepth)const;
+
 
 public:
 	RedBlackTree();
@@ -26,6 +33,7 @@ public:
 	Node<T>* getRoot()const;
 	void insert(T value);
 	void remove(T value);
+	
 	
 	
 };
@@ -94,6 +102,22 @@ inline void RedBlackTree<T>::deleteNode(Node<T>* parrent){
 	delete parrent;
 }
 
+
+
+template<typename T>
+inline void RedBlackTree<T>::fixDoubleRed(Node<T>* grandChild){
+
+}
+
+template<typename T>
+inline void RedBlackTree<T>::fixTree(Node<T>* current){
+	if (current == nullptr) return;
+	if (current->isRed() && current->getParent()->isRed()) {
+		fixDoubleRed(current);
+	}
+	fixTree(current->getParent());
+}
+
 template<typename T>
 inline Node<T>* RedBlackTree<T>::findMin(Node<T>* z, Node<T>* v, Node<T>* u) const{
 	if (*z < *v && *z < *u)
@@ -131,6 +155,74 @@ inline void RedBlackTree<T>::disconnect(Node<T>* node){
 	node->setParent(nullptr);
 }
 
+template<typename T>
+inline int RedBlackTree<T>::maxBlackDepth() const
+{
+	return maxBlackDepth(root,0);
+}
+
+template<typename T>
+inline int RedBlackTree<T>::maxBlackDepth(Node<T>* current, int curDepth) const
+{
+	if (current == nullptr)return curDepth;
+	int leftDepth;
+	int rightDepth;
+
+	if (current->isBlack()) {
+		leftDepth = getBlackDepth(current->getLeft(), curDepth + 1);
+		rightDepth = getBlackDepth(current->getRight(), curDepth + 1);
+	}
+	else {
+		leftDepth = getBlackDepth(current->getLeft(), curDepth);
+		rightDepth = getBlackDepth(current->getRight(), curDepth);
+	}
+
+	return (leftDepth < rightDepth) ? rightDepth : leftDepth;
+}
+
+template<typename T>
+inline int RedBlackTree<T>::getBlackDepth(Node<T>* current, int curDepth)const{
+	if (current == nullptr)return curDepth;
+	int leftDepth;
+	int rightDepth;
+	//todo rekursiv black depth
+	if (current->isBlack()) {
+		leftDepth = getBlackDepth(current->getLeft(), curDepth + 1);
+		rightDepth = getBlackDepth(current->getRight(), curDepth + 1);
+	}
+	else {
+		leftDepth = getBlackDepth(current->getLeft(), curDepth);
+		rightDepth = getBlackDepth(current->getRight(), curDepth);
+	}
+}
+
+template<typename T>
+inline bool RedBlackTree<T>::isBalanced()const{
+	int maxDepth = maxBlackDepth();
+	return isBalanced(root, maxDepth, 0);
+}
+
+template<typename T>
+inline bool RedBlackTree<T>::isBalanced(Node<T>* current, const int& maxDepth, int curDepth) const
+{
+	if (current == nullptr)
+		return (curDepth == maxDepth) ? 1 : 0;
+
+	bool leftBalanced;
+	bool rightBalanced;
+
+	if (current->isBlack()) {
+		leftBalanced = isBalanced(current->getLeft(), maxDepth, curDepth + 1);
+		rightBalanced = isBalanced(current->getRight(), maxDepth, curDepth + 1);
+	}
+	else {
+		leftBalanced = isBalanced(current->getLeft(), maxDepth, curDepth);
+		rightBalanced = isBalanced(current->getRight(), maxDepth, curDepth);
+	}
+
+	return leftBalanced & rightBalanced;
+}
+
 
 
 template<typename T>
@@ -161,7 +253,7 @@ inline void RedBlackTree<T>::insert(T value){
 			if (current->getLeft() == nullptr) {
 				newNode->setParrent(current);
 				current->setLeft(newNode);
-				return;
+				break;
 			}
 			else current = current->getLeft();
 		}
@@ -169,11 +261,12 @@ inline void RedBlackTree<T>::insert(T value){
 			if (current->getRight() == nullptr) {
 				newNode->setParrent(current);
 				current->setRight(newNode);
-				return;
+				break;
 			}
 			else current = current->getRight();
 		}
 	}
+	fixTree(newNode);
 
 }
 
