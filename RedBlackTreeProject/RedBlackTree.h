@@ -25,6 +25,9 @@ class RedBlackTree
 	int getBlackDepth(Node<T>* current, int curDepth)const;
 	bool isBalanced()const;
 	bool isBalanced(Node<T>* current, const int& maxDepth,int curDepth)const;
+	int maxDepth(Node<T>* current, int curDepth)const;
+	int maxDepth()const;
+	void allocatePositionInPrintTree(Node<T>** printTree[] , int treeIndex[] , int curDepth, Node<T>* current,const int& mDepth);
 
 
 public:
@@ -33,6 +36,7 @@ public:
 	Node<T>* getRoot()const;
 	void insert(T value);
 	void remove(T value);
+	void print()const;
 	
 	
 	
@@ -223,6 +227,47 @@ inline bool RedBlackTree<T>::isBalanced(Node<T>* current, const int& maxDepth, i
 	return leftBalanced & rightBalanced;
 }
 
+template<typename T>
+inline int RedBlackTree<T>::maxDepth(Node<T>* current, int curDepth) const{
+	int leftMax = 0;
+	int rightMax = 0;
+	if (current->getLeft() != nullptr)
+		leftMax = maxDepth(current->getLeft(), curDepth + 1);
+	if (current->getRight() != nullptr)
+		rightMax = maxDepth(current->getRight(), curDepth + 1);
+	
+	if (leftMax != 0 && rightMax != 0)
+		return(leftMax > rightMax) ? leftMax : rightMax;
+	else if (leftMax != 0) return leftMax;
+	else if (rightMax != 0) return rightMax;
+	else return curDepth;
+	
+}
+
+template<typename T>
+inline int RedBlackTree<T>::maxDepth() const
+{
+	return maxDepth(root,0);
+}
+
+template<typename T>
+inline void RedBlackTree<T>::allocatePositionInPrintTree(Node<T>** printTree [] , int treeIndex [] , int curDepth, Node<T>* current, const int& mDepth){
+	if (current != nullptr) {
+		printTree[curDepth][treeIndex[curDepth]] = current;
+		treeIndex[curDepth]++;
+		allocatePositionInPrintTree(printTree, treeIndex, curDepth + 1, current->getLeft(), mDepth);
+		allocatePositionInPrintTree(printTree, treeIndex, curDepth + 1, current->getRight(), mDepth);
+	}
+	else {
+		if (curDepth <= mDepth) {
+			printTree[curdepth][treeIndex[curDepth]] = current;
+			treeIndex[curDepth]++;
+			allocatePositionInPrintTree(printTree, treeIndex, curDepth + 1, nullptr, mDepth);
+			allocatePositionInPrintTree(printTree, treeIndex, curDepth + 1, nullptr, mDepth);
+		}
+	}
+}
+
 
 
 template<typename T>
@@ -273,4 +318,36 @@ inline void RedBlackTree<T>::insert(T value){
 template<typename T>
 inline void RedBlackTree<T>::remove(T value){
 
+}
+
+template<typename T>
+inline void RedBlackTree<T>::print()const{
+	int mDepth = maxDepth();
+	const int maxDigitsInNumber = 3;
+	int bottomWidth = pow(2, mDepth) * maxDigitsInNumber * 2;
+	Node<T>*** printTree = new Node<T>** [mDepth + 1];
+	int* treeIndex = new int[mDepth + 1];
+	for (int i = 0; i <= mDepth; i++) {
+		printTree[i] = new Node<T> * [pow(2, i)];
+		treeIndex[i] = 0;
+	}
+	allocatePositionInPrintTree(printTree, treeIndex, 0, root, mDepth);
+	for (int i = 0; i <= mDepth; i++) {
+		for (int n = 0; n < treeIndex[i]; n++) {
+			if (printTree[i][n] != nullptr) {
+				if (n == 0)
+					cout << setw((bottomWidth / 2) / (pow(2, i)) - maxDigitsInNumber) << "" << setw(maxDigitsInNumber) << printTree[i][n];
+				else
+					cout << setw((bottomWidth / 2) / (pow(2, i - 1)) - maxDigitsInNumber) << "" << setw(maxDigitsInNumber) << printTree[i][n];
+			}
+			else {
+				if (n == 0)
+					cout << setw((bottomWidth / 2) / (pow(2, i)) - maxDigitsInNumber) << "" << setw(maxDigitsInNumber) << "-";
+				else
+					cout << setw((bottomWidth / 2) / (pow(2, i - 1)) - maxDigitsInNumber) << "" << setw(maxDigitsInNumber) << "-";
+			}
+		}
+		cout << endl;
+	}
+	cout << endl;
 }
