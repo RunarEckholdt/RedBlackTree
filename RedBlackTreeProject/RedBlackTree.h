@@ -15,10 +15,11 @@ class RedBlackTree
 	void recolorChidren(Node<T>* parrent);
 	void deleteNode(Node<T>* parrent);
 	void fixDoubleRed(Node<T>* grandChild);
-	void fixTree(Node<T>* current);
-	Node<T>* findMin(Node<T>* z, Node<T>* v, Node<T>* u)const;
+	void fixTreeUp(Node<T>* current);
+	/*Node<T>* findMin(Node<T>* z, Node<T>* v, Node<T>* u)const;
 	Node<T>* findMid(Node<T>* z, Node<T>* v, Node<T>* u)const;
-	Node<T>* findMax(Node<T>* z, Node<T>* v, Node<T>* u)const;
+	Node<T>* findMax(Node<T>* z, Node<T>* v, Node<T>* u)const;*/
+	void findMaxMidMin(Node<T>*& a, Node<T>*& b, Node<T>*& c, Node<T>* z, Node<T>* v, Node<T>* u);
 	void disconnect(Node<T>* node);
 	int maxBlackDepth()const;
 	int maxBlackDepth(Node<T>* current, int curDepth)const;
@@ -28,7 +29,7 @@ class RedBlackTree
 	int maxDepth(Node<T>* current, int curDepth)const;
 	int maxDepth()const;
 	void allocatePositionInPrintTree(Node<T>** printTree[] , int treeIndex[] , int curDepth, Node<T>* current,const int& mDepth);
-
+	
 
 public:
 	RedBlackTree();
@@ -47,11 +48,14 @@ public:
 template<typename T>
 inline void RedBlackTree<T>::trinodeRestructuring(Node<T>* z, Node<T>* v, Node<T>* u)
 {
-	Node<T>* a = findMin(z, v, u);
-	Node<T>* b = findMid(z, v, u);
-	Node<T>* c = findMax(z, v, u);
+	Node<T>* a = nullptr;
+	Node<T>* b = nullptr;
+	Node<T>* c = nullptr;
+
+	findMaxMidMin(a, b, c, z, v, u,);
+
 	Node<T> oldU = *u;
-	Node<T> tempB = *b;
+	//Node<T> tempB = *b;
 	vector<Node<T>*> children;
 	if (z->getLeft() != nullptr)children.push_back(z->getLeft());
 	if (z->getRight() != nullptr)children.push_back(z->getRight());
@@ -73,7 +77,7 @@ inline void RedBlackTree<T>::trinodeRestructuring(Node<T>* z, Node<T>* v, Node<T
 	u->setRight(c);
 	a->setParent(b);
 	c->setParent(b);
-	c->setLeft(tempB.getRight());
+	//c->setLeft(tempB.getRight());
 
 	for (Node<T>* node : children) {
 		if (*node < *b) {
@@ -85,6 +89,9 @@ inline void RedBlackTree<T>::trinodeRestructuring(Node<T>* z, Node<T>* v, Node<T
 			else c->setRight(node);
 		}
 	}
+	a->setRed();
+	b->setBlack();
+	c->setRed();
 	
 	
 
@@ -110,11 +117,19 @@ inline void RedBlackTree<T>::deleteNode(Node<T>* parrent){
 
 template<typename T>
 inline void RedBlackTree<T>::fixDoubleRed(Node<T>* grandChild){
-
+	Node<T>* parrent = grandChild->getParent();
+	if (parrent->getSibling() != nullptr) {
+		if (parrent->getSibling()->isRed()) {
+			recolorChidren(parrent->getParent());
+		}
+	}
+	else {
+		trinodeRestructuring(grandChild, parrent, parrent->getParent());
+	}
 }
 
 template<typename T>
-inline void RedBlackTree<T>::fixTree(Node<T>* current){
+inline void RedBlackTree<T>::fixTreeUp(Node<T>* current){
 	if (current == nullptr) return;
 	if (current->isRed() && current->getParent()->isRed()) {
 		fixDoubleRed(current);
@@ -122,34 +137,89 @@ inline void RedBlackTree<T>::fixTree(Node<T>* current){
 	fixTree(current->getParent());
 }
 
-template<typename T>
-inline Node<T>* RedBlackTree<T>::findMin(Node<T>* z, Node<T>* v, Node<T>* u) const{
-	if (*z < *v && *z < *u)
-		return z;
-	else if (*v < *z && *v < *u)
-		return v;
-	else
-		return u;
-}
+//template<typename T>
+//inline Node<T>* RedBlackTree<T>::findMin(Node<T>* z, Node<T>* v, Node<T>* u) const{
+//	if (*z < *v && *z < *u)
+//		return z;
+//	else if (*v < *z && *v < *u)
+//		return v;
+//	else
+//		return u;
+//}
+//
+//template<typename T>
+//inline Node<T>* RedBlackTree<T>::findMid(Node<T>* z, Node<T>* v, Node<T>* u) const{
+//	if (*z < *v && *u < *z || *z < *u && *v < *z)
+//		return z;
+//	else if (*v < *z && *u < *v || *v < *u && *z < *v)
+//		return v;
+//	else
+//		return u;
+//}
+//
+//template<typename T>
+//inline Node<T>* RedBlackTree<T>::findMax(Node<T>* z, Node<T>* v, Node<T>* u) const{
+//	if (*v < *z && *u < *z)
+//		return z;
+//	else if (*z < *v && *u < *v)
+//		return v;
+//	else
+//		return u;
+//}
 
 template<typename T>
-inline Node<T>* RedBlackTree<T>::findMid(Node<T>* z, Node<T>* v, Node<T>* u) const{
-	if (*z < *v && *u < *z || *z < *u && *v < *z)
-		return z;
-	else if (*v < *z && *u < *v || *v < *u && *z < *v)
-		return v;
-	else
-		return u;
-}
+inline void RedBlackTree<T>::findMaxMidMin(Node<T>*& a, Node<T>*& b, Node<T>*& c, Node<T>* z, Node<T>* v, Node<T>* u){
+	if (*z == *v) {
+		if (*z < *u) {
+			a = z;
+			b = v;
+			c = u;
+		}
+		else {
+			a = u;
+			b = v;
+			c = z;
+		}
+	}
+	else if (*z == *u) {
+		if (*z < *v) {
+			a = z;
+			b = u;
+			c = v;
+		}
+		else {
+			a = z;
+			b = v;
+			c = u;
+		}
 
-template<typename T>
-inline Node<T>* RedBlackTree<T>::findMax(Node<T>* z, Node<T>* v, Node<T>* u) const{
-	if (*v < *z && *u < *z)
-		return z;
-	else if (*z < *v && *u < *v)
-		return v;
-	else
-		return u;
+	}
+	else if (*v == *u) {
+		if (*u < *z) {
+			a = u;
+			b = v;
+			c = z;
+		}
+		else {
+			a = z;
+			b = v;
+			c = u;
+		}
+	}else {
+		if (*z < *v && *z < *u)a = z;
+		else if (*v < *z && *v < *u)a = v;
+		else a = u;
+
+		if (*z < *v && *u < *z || *z < *u && *v < *z) b = z; //if z is the middle value
+		else if (*v < *z && *u < *v || *v < *u && *z < *v) b = v;//if v is the middle value
+		else b = u;
+
+		if(a != z && b != z) c = z;
+		else if(a != v && b != v) c = v;
+		else c = u;
+	}
+	
+	
 }
 
 template<typename T>

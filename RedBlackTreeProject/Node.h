@@ -21,6 +21,9 @@ public:
 	void setRight(Node<T>* child);
 	void setParent(Node<T>* parrent);
 	void changeColor();
+	Node<T>* getSibling()const;
+	void setBlack();
+	void setRed();
 };
 
 template<typename T>
@@ -58,10 +61,27 @@ inline Node<T>* Node<T>::getParent() const{ return parent; }
 template<typename T>
 inline void Node<T>::changeColor() { colorBlack = !colorBlack; }
 
+template<typename T>
+inline Node<T>* Node<T>::getSibling() const {
+	if (parrent->getLeft() != this)return parrent->getLeft();
+	else return parrent->getRight();
+}
+
+template<typename T>
+inline void Node<T>::setBlack(){colorBlack = true;}
+
+template<typename T>
+inline void Node<T>::setRed(){colorBlack = false;}
+
 
 
 
 template<typename T>
 bool operator<(Node<T> a, Node<T> b) {
 	return a.getValue() < b.getValue();
+}
+
+template<typename T>
+bool operator==(Node<T> a, Node<T> b) {
+	return a.getValue() == b.getValue();
 }
